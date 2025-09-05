@@ -38,9 +38,10 @@ def escape_all(data):
 
 
 
-# Load YAML
-with open("resume_truth.yaml", "r") as f:
-    data = yaml.safe_load(f)
+def load_yaml(yaml_path: str = "resume_truth.yaml"):
+    """Load YAML data from the given path and return the parsed object."""
+    with open(yaml_path, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
 
 # Jinja2 environment (looks for templates in ./templates)
 env = Environment(
@@ -53,6 +54,7 @@ env = Environment(
     comment_start_string = '<#',
     comment_end_string = '#>',
 )
+
 def filter_for_target(obj, target="cv"):
     """Recursively filter a loaded YAML structure.
 
@@ -87,7 +89,7 @@ def filter_for_target(obj, target="cv"):
         return obj
 
 
-def render_target(template_name: str, out_tex: str, target: str = None):
+def render_target(template_name: str, out_tex: str, target: str = None, yaml_path: str = None):
     """Render a template and optionally build PDF and copy to public folder.
 
     If `target` is provided, the YAML data is filtered with `filter_for_target`
@@ -95,6 +97,8 @@ def render_target(template_name: str, out_tex: str, target: str = None):
     """
     tmpl = env.get_template(template_name)
 
+    # Load YAML (either custom path or default)
+    data = load_yaml(yaml_path) if yaml_path else load_yaml()
     data_to_render = data
     if target:
         data_to_render = filter_for_target(data, target)
