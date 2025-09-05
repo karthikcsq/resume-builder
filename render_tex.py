@@ -87,7 +87,7 @@ def filter_for_target(obj, target="cv"):
         return obj
 
 
-def render_target(template_name: str, out_tex: str, out_pdf_name: str, target: str = None):
+def render_target(template_name: str, out_tex: str, target: str = None):
     """Render a template and optionally build PDF and copy to public folder.
 
     If `target` is provided, the YAML data is filtered with `filter_for_target`
@@ -113,62 +113,32 @@ def render_target(template_name: str, out_tex: str, out_pdf_name: str, target: s
             print(f"pdflatex failed with exit code {e.returncode} for {out_tex}")
     else:
         print("pdflatex not found in PATH — skipping PDF generation step")
-
-    # Copy generated PDF to site public folder with the requested name
+    # Return path to generated PDF for the caller to handle copying
     src_pdf = Path(out_tex).with_suffix(".pdf")
-    copy_to_public(src_pdf, out_pdf_name)
-
-    # Additionally copy to user Documents folders (Windows) with timestamped filename
+    # Clean up auxiliary files produced by pdflatex
     try:
-        kind = "CV" if "cv" in out_pdf_name.lower() else "Resume"
-        copy_to_documents(src_pdf, kind)
+        cleanup_aux_files(out_tex)
     except Exception as e:
-        print(f"Failed to copy to Documents: {e}")
+        print(f"Failed to cleanup auxiliary files for {out_tex}: {e}")
+    return src_pdf
 
 
-def copy_to_public(src_pdf: Path, out_pdf_name: str):
-    """Copy generated PDF to the website public folder."""
-    # Use home-based pathing so this works per-user (home -> CodingFiles/PersonalWebsite/...)
-    dest_dir = Path.home() / "CodingFiles" / "PersonalWebsite" / "personalsite" / "personalsite" / "public"
-    dest_dir.mkdir(parents=True, exist_ok=True)
-    dest_pdf = dest_dir / out_pdf_name
-    try:
-        shutil.copyfile(src_pdf, dest_pdf)
-        print(f"Copied {src_pdf} -> {dest_pdf}")
-    except FileNotFoundError:
-        print(f"Source PDF not found: {src_pdf}. Did pdflatex run successfully?")
-    except Exception as e:
-        print(f"Failed to copy PDF to public folder: {e}")
+def cleanup_aux_files(tex_path: str):
+    """Remove common auxiliary files produced by pdflatex for the given tex file.
 
+    Removes: .aux, .log, .out for the basename (e.g. cv_output.aux)
+    """
+    base = Path(tex_path).with_suffix("")
+    for suffix in (".aux", ".log", ".out"):
+        p = base.with_suffix(suffix)
+        try:
+            if p.exists():
+                p.unlink()
+                print(f"Removed {p}")
+        except Exception as e:
+            print(f"Could not remove {p}: {e}")
 
-def copy_to_documents(src_pdf: Path, kind: str):
-    """Copy generated PDF to OneDrive/Documents/<CVs|Resumes> with timestamped name."""
-    from datetime import datetime
-
-    # build timestamped filename: YY_MM_Karthik_Thyagarajan_<CV|Resume>.pdf
-    now = datetime.now()
-    yy = now.strftime("%y")
-    mm = now.strftime("%m")
-    filename = f"{yy}_{mm}_Karthik_Thyagarajan_{kind}.pdf"
-
-    docs_base = Path.home() / "OneDrive/Documents"
-    # target dirs
-    cvs_dir = docs_base / "CVs"
-    resumes_dir = docs_base / "Resumes"
-    cvs_dir.mkdir(parents=True, exist_ok=True)
-    resumes_dir.mkdir(parents=True, exist_ok=True)
-
-    if kind == "CV":
-        target_path = cvs_dir / filename
-    else:
-        target_path = resumes_dir / filename
-
-    shutil.copyfile(src_pdf, target_path)
-    print(f"Also copied {src_pdf} -> {target_path}")
-
-
-# Render CV (existing behavior)
-render_target("cv.tex.j2", "cv_output.tex", "cv.pdf", target="cv")
-
-# Render resume (new template) — filter items to those that include 'resume'
-render_target("resume.tex.j2", "resume_output.tex", "resume.pdf", target="resume")
+if __name__ == "__main__":
+    # Example usage: render both CV and resume
+    render_target("cv.tex.j2", "cv_output.tex", target="cv")
+    render_target("resume.tex.j2", "resume_output.tex", target="resume")

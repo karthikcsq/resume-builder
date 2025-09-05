@@ -205,3 +205,6 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+# Local copy utilities (may contain user-specific paths)
+copy_utils.py
+publish.py
