@@ -1,9 +1,21 @@
+name: "John Doe"
+contact:
+  - "john.doe@example.com"
+  - "555-123-4567"
+links:
+  - label: "GitHub"
+    url: "https://github.com/johndoe"
+  - label: "LinkedIn"
+    url: "https://linkedin.com/in/johndoe"
+  - label: "Portfolio"
+    url: "https://johndoe.com"
+
 education:
-  - institution: "Purdue University"
-    location: "West Lafayette, IN"
-    degree: "B.S., Computer Science & Artificial Intelligence"
+  - institution: "Stanford University"
+    location: "Stanford, CA"
+    degree: "B.S. of Computer Science"
     gpa: "4.0"
-    dates: "Aug 2024 - May 2027 (Expected)"
+    dates: "Aug 2024 - May 2028 (Expected)"
 
 skills:
   - category: "AI / ML"

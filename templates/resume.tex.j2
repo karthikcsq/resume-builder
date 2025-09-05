@@ -150,21 +150,23 @@
 
 % Header
 \begin{center}
-    {\Huge\textbf{KARTHIK THYAGARAJAN}}
+  {\Huge\textbf{ <<< name >>> }}
 \end{center}
 
 \vspace{-5mm}
 
 \begin{center}
-    \small{
-    \href{karthik6002@gmail.com}{karthik6002@gmail.com} | 
-    \href{kthyagar@purdue.edu}{kthyagar@purdue.edu}
-    
-    \href{https://www.karthikthyagarajan.com}
-    {karthikthyagarajan.com} | 
-    \socialicon{\faLinkedin} \href{https://www.linkedin.com/in/karthikthyagarajan06}{linkedin.com/in/karthikthyagarajan06/} | 
-    \socialicon{\faGithub} \href{https://github.com/karthikcsq}{github.com/karthikcsq} 
-    }
+    \small{<%- if contact -%>
+      <%- for c in contact -%>
+        <%- if '@' in c -%>\href{mailto:<<< c >>>}{<<< c >>>}<%- elif 'http' in c -%>\href{<<< c >>>}{<<< c | replace('https://','') | replace('http://','') >>>}<%- else -%><<< c >>><%- endif -%><%- if not loop.last -%>~|~<%- endif -%>
+      <%- endfor -%>
+      <%- if links -%>\\<%- endif -%>
+    <%- endif -%>
+    <%- if links -%>
+      <%- for l in links -%>
+        <%- if 'GitHub' in l.label -%>\socialicon{\faGithub} \href{<<< l.url >>>}{<<< l.url | replace('https://','') | replace('http://','') >>>}<%- elif 'LinkedIn' in l.label -%>\socialicon{\faLinkedin} \href{<<< l.url >>>}{<<< l.url | replace('https://','') | replace('http://','') >>>}<%- else -%>\href{<<< l.url >>>}{<<< l.url | replace('https://','') | replace('http://','') >>>}<%- endif -%><%- if not loop.last -%>~|~<%- endif -%>
+      <%- endfor -%>
+    <%- endif -%>}
 \end{center}
 
 \vspace{-6mm}
@@ -177,7 +179,7 @@
   { <<< edu.institution >>> }
   { <<< edu.location >>> }
   { <<< edu.degree >>> - <<< edu.gpa >>> GPA }
-  { <<< edu.status >>> }
+  { <<< edu.dates >>> }
 <% endfor %>
 
 \resumeSubHeadingListEnd
@@ -218,7 +220,7 @@
   {<<< project.title >>>}
   {Tools: <<< project.tools >>>}
   {<<< project.date >>>}
-  {\href{<<< project.link >>>}{<<< project.link >>>} }
+  {\href{<<< project.link >>>}{<<< project.link | replace('https://','') | replace('http://','') >>>} }
 \resumeItemListStart
   <% for item in project.bullets %>
   \item <<< item >>>
