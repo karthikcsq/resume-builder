@@ -108,6 +108,8 @@ def render_target(template_name: str, out_tex: str, target: str = None, yaml_pat
 
     with open(out_tex, "w", encoding="utf-8") as f:
         f.write(output)
+        
+    print("Wrote LaTeX to", out_tex)
 
     # Run pdflatex if available
     if shutil.which("pdflatex"):
@@ -119,12 +121,46 @@ def render_target(template_name: str, out_tex: str, target: str = None, yaml_pat
         print("pdflatex not found in PATH — skipping PDF generation step")
     # Return path to generated PDF for the caller to handle copying
     src_pdf = Path(out_tex).with_suffix(".pdf")
+
+    # If a PDF was generated, move it to the output/ directory
+    returned_pdf_path = src_pdf
+    try:
+        if src_pdf.exists():
+            output_dir = Path("output")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            dest_pdf = output_dir / src_pdf.name
+            # If destination exists, replace it to avoid errors on Windows
+            if dest_pdf.exists():
+                dest_pdf.unlink()
+            shutil.move(str(src_pdf), str(dest_pdf))
+            print(f"Moved {src_pdf} -> {dest_pdf}")
+            returned_pdf_path = dest_pdf
+    except Exception as e:
+        print(f"Failed to move PDF to output directory: {e}")
+
     # Clean up auxiliary files produced by pdflatex
     try:
         cleanup_aux_files(out_tex)
     except Exception as e:
         print(f"Failed to cleanup auxiliary files for {out_tex}: {e}")
-    return src_pdf
+
+    # Move the generated .tex file into output/ as well (regardless of PDF success)
+    try:
+        output_dir = Path("output")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        src_tex = Path(out_tex)
+        dest_tex = output_dir / src_tex.name
+        if src_tex.exists():
+            if dest_tex.exists():
+                dest_tex.unlink()
+            shutil.move(str(src_tex), str(dest_tex))
+            print(f"Moved {src_tex} -> {dest_tex}")
+        else:
+            print(f"TeX file not found (skipping move): {src_tex}")
+    except Exception as e:
+        print(f"Failed to move TeX to output directory: {e}")
+
+    return returned_pdf_path
 
 
 def cleanup_aux_files(tex_path: str):

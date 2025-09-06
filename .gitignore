@@ -209,3 +209,6 @@ __marimo__/
 copy_utils.py
 publish.py
 karthik_thyagarajan_truth.yaml
+
+*.pdf
+*.tex

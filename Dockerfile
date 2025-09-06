@@ -22,11 +22,10 @@ WORKDIR /app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Ensure output directory exists
+RUN mkdir -p /app/output
+
 # Copy project
 COPY . .
 
 CMD ["python", "render_tex.py"]
-
-# No default command; examples (Windows PowerShell):
-# - Interactive shell:   docker run -it --rm -v ${PWD}:/app resume-builder:latest
-# - Run the renderer:    docker run --rm -v ${PWD}:/app resume-builder:latest -c "python render_tex.py"
