@@ -21,7 +21,6 @@ skills:
   - category: "AI / ML"
     bullets:
       - "LLM pipelines and RAG (LangChain, retrieval, evaluation)"
-      - "ABCBDBKVBSDGBKFJGKJSHDJG"
     show_on: ["cv", "resume"]
 
   - category: "Data & Tools"
@@ -44,6 +43,7 @@ experience:
     show_on: ["cv", "resume"]
     bullets:
       - "Coded YouTube"
+      - "Worked on Google Search"
 
 projects:
   - title: "ChatGPT"

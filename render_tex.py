@@ -89,16 +89,20 @@ def filter_for_target(obj, target="cv"):
         return obj
 
 
-def render_target(template_name: str, out_tex: str, target: str = None, yaml_path: str = None):
-    """Render a template and optionally build PDF and copy to public folder.
+def render_target(template_name: str, out_tex: str, yaml_content: str, target: str | None = None):
+    """Render a template from a YAML string and optionally build a PDF.
 
-    If `target` is provided, the YAML data is filtered with `filter_for_target`
-    before escaping and rendering.
+    Args:
+        template_name: Jinja2 template filename under `templates/`.
+        out_tex: Output .tex file path (will be moved into output/).
+        yaml_content: The YAML document as a string (UTF-8 text).
+        target: Optional filter target (e.g., "cv" or "resume"). If provided,
+                entries with show_on excluding this target are removed.
     """
     tmpl = env.get_template(template_name)
 
-    # Load YAML (either custom path or default)
-    data = load_yaml(yaml_path) if yaml_path else load_yaml()
+    # Parse YAML from provided string
+    data = yaml.safe_load(yaml_content) or {}
     data_to_render = data
     if target:
         data_to_render = filter_for_target(data, target)
@@ -179,6 +183,14 @@ def cleanup_aux_files(tex_path: str):
             print(f"Could not remove {p}: {e}")
 
 if __name__ == "__main__":
-    # Example usage: render both CV and resume
-    render_target("cv.tex.j2", "cv_output.tex", target="cv")
-    render_target("resume.tex.j2", "resume_output.tex", target="resume")
+    # Example usage: render both CV and resume using the default YAML file as input
+    default_yaml_path = "resume_truth.yaml"
+    try:
+        with open(default_yaml_path, "r", encoding="utf-8") as _f:
+            yaml_str = _f.read()
+    except FileNotFoundError:
+        print(f"Default YAML not found: {default_yaml_path}")
+        yaml_str = "{}"
+
+    render_target("cv.tex.j2", "cv_output.tex", yaml_str, target="cv")
+    render_target("resume.tex.j2", "resume_output.tex", yaml_str, target="resume")
