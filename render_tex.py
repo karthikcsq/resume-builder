@@ -94,7 +94,8 @@ def render_target(template_name: str, out_tex: str, yaml_content: str, target: s
 
     Args:
         template_name: Jinja2 template filename under `templates/`.
-        out_tex: Output .tex file path (will be moved into output/).
+        out_tex: Output .tex file path. The .tex and generated .pdf will reside
+                 in the same directory as this path. No output/ folder is used.
         yaml_content: The YAML document as a string (UTF-8 text).
         target: Optional filter target (e.g., "cv" or "resume"). If provided,
                 entries with show_on excluding this target are removed.
@@ -110,61 +111,36 @@ def render_target(template_name: str, out_tex: str, yaml_content: str, target: s
     data_escaped = escape_all(data_to_render or {})
     output = tmpl.render(**data_escaped)
 
-    with open(out_tex, "w", encoding="utf-8") as f:
+    # Ensure destination directory exists
+    out_tex_path = Path(out_tex)
+    out_dir = out_tex_path.parent if out_tex_path.parent != Path("") else Path(".")
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    with open(out_tex_path, "w", encoding="utf-8") as f:
         f.write(output)
         
-    print("Wrote LaTeX to", out_tex)
+    print("Wrote LaTeX to", out_tex_path)
 
     # Run pdflatex if available
     if shutil.which("pdflatex"):
         try:
-            subprocess.run(["pdflatex", out_tex], check=True)
+            # Run in the output directory to keep artifacts together
+            subprocess.run(["pdflatex", out_tex_path.name], check=True, cwd=str(out_dir))
         except subprocess.CalledProcessError as e:
-            print(f"pdflatex failed with exit code {e.returncode} for {out_tex}")
+            print(f"pdflatex failed with exit code {e.returncode} for {out_tex_path}")
     else:
         print("pdflatex not found in PATH — skipping PDF generation step")
     # Return path to generated PDF for the caller to handle copying
-    src_pdf = Path(out_tex).with_suffix(".pdf")
-
-    # If a PDF was generated, move it to the output/ directory
-    returned_pdf_path = src_pdf
-    try:
-        if src_pdf.exists():
-            output_dir = Path("output")
-            output_dir.mkdir(parents=True, exist_ok=True)
-            dest_pdf = output_dir / src_pdf.name
-            # If destination exists, replace it to avoid errors on Windows
-            if dest_pdf.exists():
-                dest_pdf.unlink()
-            shutil.move(str(src_pdf), str(dest_pdf))
-            print(f"Moved {src_pdf} -> {dest_pdf}")
-            returned_pdf_path = dest_pdf
-    except Exception as e:
-        print(f"Failed to move PDF to output directory: {e}")
+    src_pdf = out_tex_path.with_suffix(".pdf")
 
     # Clean up auxiliary files produced by pdflatex
     try:
-        cleanup_aux_files(out_tex)
+        cleanup_aux_files(str(out_tex_path))
     except Exception as e:
-        print(f"Failed to cleanup auxiliary files for {out_tex}: {e}")
+        print(f"Failed to cleanup auxiliary files for {out_tex_path}: {e}")
 
-    # Move the generated .tex file into output/ as well (regardless of PDF success)
-    try:
-        output_dir = Path("output")
-        output_dir.mkdir(parents=True, exist_ok=True)
-        src_tex = Path(out_tex)
-        dest_tex = output_dir / src_tex.name
-        if src_tex.exists():
-            if dest_tex.exists():
-                dest_tex.unlink()
-            shutil.move(str(src_tex), str(dest_tex))
-            print(f"Moved {src_tex} -> {dest_tex}")
-        else:
-            print(f"TeX file not found (skipping move): {src_tex}")
-    except Exception as e:
-        print(f"Failed to move TeX to output directory: {e}")
-
-    return returned_pdf_path
+    # Return the path where the PDF would be (may not exist if pdflatex missing)
+    return src_pdf
 
 
 def cleanup_aux_files(tex_path: str):

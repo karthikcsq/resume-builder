@@ -24,23 +24,18 @@ async def render(yaml_input: YamlInput):
 
     # Call renderer directly with YAML string
     try:
-        cv_generated = render_target("cv.tex.j2", "cv_output.tex", yaml_input.yaml_content, target="cv")
-        resume_generated = render_target("resume.tex.j2", "resume_output.tex", yaml_input.yaml_content, target="resume")
+        cv_generated = render_target(
+            "cv.tex.j2", str(workdir / "cv_output.tex"), yaml_input.yaml_content, target="cv"
+        )
+        resume_generated = render_target(
+            "resume.tex.j2", str(workdir / "resume_output.tex"), yaml_input.yaml_content, target="resume"
+        )
     except Exception as e:
         return JSONResponse({"error": f"Rendering failed: {e}"}, status_code=500)
 
-    # Copy PDFs into the per-request workdir for download endpoints
-    cv_pdf = workdir / "cv_output.pdf"
-    resume_pdf = workdir / "resume_output.pdf"
-
-    try:
-        if cv_generated and cv_generated.exists():
-            shutil.copyfile(cv_generated, cv_pdf)
-        if resume_generated and resume_generated.exists():
-            shutil.copyfile(resume_generated, resume_pdf)
-    except Exception as e:
-        # Continue to existence check below; may fail if pdflatex wasn't available
-        print(f"Failed to copy generated PDFs into workdir: {e}")
+    # PDFs should already be generated directly in the per-request workdir
+    cv_pdf = Path(cv_generated) if cv_generated else (workdir / "cv_output.pdf")
+    resume_pdf = Path(resume_generated) if resume_generated else (workdir / "resume_output.pdf")
 
     if not cv_pdf.exists() and not resume_pdf.exists():
         return JSONResponse({"error": "No PDFs generated (is pdflatex installed?)"}, status_code=500)
@@ -129,8 +124,7 @@ async def render_json_pdf(json_input: JsonInput, doc_type: str = "resume"):
     pdf_path = None
     pdf_bytes = None
     try:
-        # Render and build PDF via existing renderer. It will move the PDF and .tex
-        # into the output/ folder if a PDF is generated.
+        # Render and build PDF via existing renderer, outputting into workdir
         generated_pdf_path = render_target(template_name, str(out_tex_path), yaml_str, target=target)
 
         # Ensure a PDF exists
@@ -146,23 +140,21 @@ async def render_json_pdf(json_input: JsonInput, doc_type: str = "resume"):
     except Exception as e:
         return JSONResponse({"error": f"Rendering failed: {e}"}, status_code=500)
     finally:
-        # Attempt cleanup: remove the moved PDF and .tex from output/, and the working dir
+        # Attempt cleanup: delete files in workdir and remove the directory
         try:
-            # Remove PDF file if it exists
-            if pdf_path and pdf_path.exists():
+            # Remove generated PDF if present
+            if pdf_path and Path(pdf_path).exists():
                 try:
-                    pdf_path.unlink()
+                    Path(pdf_path).unlink()
                 except Exception as _e:
                     print(f"Cleanup warning: could not delete PDF {pdf_path}: {_e}")
 
-            # Remove the .tex moved to output/
+            # Remove the generated TEX file in workdir
             try:
-                output_dir = Path("output")
-                moved_tex = output_dir / out_tex_name
-                if moved_tex.exists():
-                    moved_tex.unlink()
+                if out_tex_path.exists():
+                    out_tex_path.unlink()
             except Exception as _e:
-                print(f"Cleanup warning: could not delete TEX {out_tex_name}: {_e}")
+                print(f"Cleanup warning: could not delete TEX {out_tex_path}: {_e}")
 
             # Remove working directory tree
             try:
