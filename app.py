@@ -4,7 +4,7 @@ import shutil
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel
-from render_tex import render_target
+from render_tex import render_target, create_tex
 import yaml
 
 app = FastAPI()
@@ -176,3 +176,34 @@ async def render_json_pdf(json_input: JsonInput, doc_type: str = "resume"):
         "Cache-Control": "no-store",
     }
     return Response(content=pdf_bytes, media_type="application/pdf", headers=headers)
+
+
+@app.post("/get_tex")
+async def get_tex(json_input: JsonInput, doc_type: str = "resume"):
+    """Return the rendered LaTeX source (no PDF) for a given JSON payload.
+
+    Args:
+        json_input: Body containing a JSON structure under `data` matching the resume schema.
+        doc_type: Query/body param selecting template: "resume" (default) or "cv".
+
+    Returns:
+        JSON response with a single key `latex` containing the rendered LaTeX string.
+    """
+    if doc_type not in ("resume", "cv"):
+        return JSONResponse({"error": "Invalid doc_type. Use 'resume' or 'cv'."}, status_code=400)
+
+    # Choose template & target consistent with existing endpoints
+    template_name = "cv.tex.j2" if doc_type == "cv" else "resume.tex.j2"
+    target = doc_type  # same string values used in show_on filtering
+
+    try:
+        yaml_str = yaml.safe_dump(json_input.data, sort_keys=False, allow_unicode=True)
+    except Exception as e:
+        return JSONResponse({"error": f"Failed to convert JSON to YAML: {e}"}, status_code=400)
+
+    try:
+        latex = create_tex(template_name=template_name, yaml_content=yaml_str, target=target)
+    except Exception as e:
+        return JSONResponse({"error": f"LaTeX generation failed: {e}"}, status_code=500)
+
+    return {"latex": latex}
