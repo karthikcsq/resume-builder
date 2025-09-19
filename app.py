@@ -12,6 +12,15 @@ app = FastAPI()
 TMP_ROOT = Path("/app/tmp")
 TMP_ROOT.mkdir(parents=True, exist_ok=True)
 
+@app.get("/health")
+async def health():
+    """Health check endpoint to verify the service is running."""
+    return {
+        "status": "healthy",
+        "service": "resume-builder",
+        "message": "Service is running and ready to process requests"
+    }
+
 class YamlInput(BaseModel):
     yaml_content: str
 
