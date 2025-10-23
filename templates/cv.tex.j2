@@ -96,6 +96,23 @@
     \vspace{-2.4mm}
 }
 
+\newcommand{\resumeEducation}[5]{%
+    \vspace{0.5mm}
+    \ifx&#5&%
+        \begin{tabular*}{0.98\textwidth}[t]{l@{\extracolsep{\fill}}r}
+            \textbf{#1} & \textit{\footnotesize{#4}} \\
+            \textit{\footnotesize{#3}} &  \footnotesize{#2} \\
+        \end{tabular*}
+    \else
+        \begin{tabular*}{0.98\textwidth}[t]{l@{\extracolsep{\fill}}r}
+            \textbf{#1} & \textit{\footnotesize{#4}} \\
+            \textit{\footnotesize{#3}} &  \footnotesize{#2} \\
+            \multicolumn{2}{l}{\vspace{1mm}{\footnotesize\textbf{Relevant Coursework:} #5}}
+        \end{tabular*}
+    \fi
+    \vspace{-2.4mm}
+}
+
 \newcommand{\resumeProject}[4]{
 \vspace{0.5mm}\item
     \begin{tabular*}{0.98\textwidth}[t]{l@{\extracolsep{\fill}}r}
@@ -170,19 +187,26 @@
 \end{center}
 
 \section{\textbf{Education}}
-\resumeSubHeadingListStart
 
 <% for edu in education %>
-  \resumeSubheading
+  <%- if edu.coursework -%>
+  \resumeEducation
   { <<< edu.institution >>> }
   { <<< edu.location >>> }
   { <<< edu.degree >>> - <<< edu.gpa >>> GPA }
   { <<< edu.dates >>> }
+  { <<< edu.coursework | join(", ") >>> }
+  <%- else -%>
+  \resumeEducation
+  { <<< edu.institution >>> }
+  { <<< edu.location >>> }
+  { <<< edu.degree >>> - <<< edu.gpa >>> GPA }
+  { <<< edu.dates >>> }
+  {}
+  <%- endif -%>
 <% endfor %>
 
-\resumeSubHeadingListEnd
-
-\vspace{-6mm}
+\vspace{-2mm}
 
 \section{\textbf{Skills}}
 \resumeHeadingSkillStart

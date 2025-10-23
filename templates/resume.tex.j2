@@ -96,6 +96,23 @@
     \vspace{-2.4mm}
 }
 
+\newcommand{\resumeEducation}[5]{%
+    \vspace{0.5mm}
+    \ifx&#5&%
+        \begin{tabular*}{0.98\textwidth}[t]{l@{\extracolsep{\fill}}r}
+            \textbf{#1} & \textit{\footnotesize{#4}} \\
+            \textit{\footnotesize{#3}} &  \footnotesize{#2} \\
+        \end{tabular*}
+    \else
+        \begin{tabular*}{0.98\textwidth}[t]{l@{\extracolsep{\fill}}r}
+            \textbf{#1} & \textit{\footnotesize{#4}} \\
+            \textit{\footnotesize{#3}} &  \footnotesize{#2} \\
+            \multicolumn{2}{l}{\vspace{1mm}{\footnotesize\textbf{Relevant Coursework:} #5}}
+        \end{tabular*}
+    \fi
+    \vspace{-2.4mm}
+}
+
 \newcommand{\resumeProject}[4]{
 \vspace{0.5mm}\item
     \begin{tabular*}{0.98\textwidth}[t]{l@{\extracolsep{\fill}}r}
@@ -110,9 +127,9 @@
 \renewcommand{\labelitemi}{$\vcenter{\hbox{\tiny$\bullet$}}$}
 \renewcommand{\labelitemii}{$\vcenter{\hbox{\tiny$\circ$}}$}
 
-\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=*,labelsep=1mm]}
-\newcommand{\resumeHeadingSkillStart}{\begin{itemize}[leftmargin=*,itemsep=1.7mm, rightmargin=2ex]}
-\newcommand{\resumeItemListStart}{\begin{itemize}[leftmargin=*,labelsep=1mm,itemsep=0.5mm]}
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=*,labelsep=0.8mm,itemsep=-0.7mm]}
+\newcommand{\resumeHeadingSkillStart}{\begin{itemize}[leftmargin=*,itemsep=1.5mm, rightmargin=2ex]}
+\newcommand{\resumeItemListStart}{\begin{itemize}[leftmargin=*,labelsep=1mm,itemsep=0.4mm]}
 
 \newcommand{\resumeSubHeadingListEnd}{\end{itemize}\vspace{2mm}}
 \newcommand{\resumeHeadingSkillEnd}{\end{itemize}\vspace{-2mm}}
@@ -150,12 +167,8 @@
 
 % Header
 \begin{center}
-  {\Huge\textbf{ <<< name >>> }}
-\end{center}
-
-\vspace{-4mm}
-
-\begin{center}
+  {\Huge\textbf{ <<< name >>> }}\\
+  \vspace{1mm}
     \small{<%- if contact -%>
       <%- for c in contact -%>
         <%- if '@' in c -%>\href{mailto:<<< c >>>}{<<< c >>>}<%- elif 'http' in c -%>\href{<<< c >>>}{<<< c | replace('https://','') | replace('http://','') >>>}<%- else -%><<< c >>><%- endif -%><%- if not loop.last -%>~|~<%- endif -%>
@@ -169,22 +182,29 @@
     <%- endif -%>}
 \end{center}
 
-\vspace{-4mm}
+\vspace{-5.5mm}
 
 \section{\textbf{Education}}
-\resumeSubHeadingListStart
 
 <% for edu in education %>
-  \resumeSubheading
+  <%- if edu.coursework -%>
+  \resumeEducation
   { <<< edu.institution >>> }
   { <<< edu.location >>> }
   { <<< edu.degree >>> - <<< edu.gpa >>> GPA }
   { <<< edu.dates >>> }
+  { <<< edu.coursework | join(", ") >>> }
+  <%- else -%>
+  \resumeEducation
+  { <<< edu.institution >>> }
+  { <<< edu.location >>> }
+  { <<< edu.degree >>> - <<< edu.gpa >>> GPA }
+  { <<< edu.dates >>> }
+  {}
+  <%- endif -%>
 <% endfor %>
 
-\resumeSubHeadingListEnd
-
-\vspace{-6mm}
+\vspace{-2mm}
 
 \section{\textbf{Skills}}
 \resumeHeadingSkillStart
@@ -193,7 +213,7 @@
 <% endfor %>
 \resumeHeadingSkillEnd
 
-\vspace{-1mm}
+\vspace{-1.5mm}
 
 \section{\textbf{Experience}}
 \resumeSubHeadingListStart
