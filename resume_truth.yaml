@@ -16,6 +16,9 @@ education:
     degree: "B.S. of Computer Science"
     gpa: "4.0"
     dates: "Aug 2024 - May 2028 (Expected)"
+    coursework:
+      - "Machine Learning 700"
+      - "AWS Backends"
 
 skills:
   - category: "AI / ML"
