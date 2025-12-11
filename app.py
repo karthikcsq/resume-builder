@@ -13,6 +13,7 @@ TMP_ROOT = Path("/app/tmp")
 TMP_ROOT.mkdir(parents=True, exist_ok=True)
 
 @app.get("/health")
+@app.head("/health")
 async def health():
     """Health check endpoint to verify the service is running."""
     return {
