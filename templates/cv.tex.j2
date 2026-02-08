@@ -107,7 +107,7 @@
         \begin{tabular*}{0.98\textwidth}[t]{l@{\extracolsep{\fill}}r}
             \textbf{#1} & \textit{\footnotesize{#4}} \\
             \textit{\footnotesize{#3}} &  \footnotesize{#2} \\
-            \multicolumn{2}{l}{\vspace{1mm}{\footnotesize\textbf{Relevant Coursework:} #5}}
+            \multicolumn{2}{l}{\vspace{1mm}{\footnotesize\textbf{Courses:} #5}}
         \end{tabular*}
     \fi
     \vspace{-2.4mm}
@@ -206,7 +206,7 @@
   <%- endif -%>
 <% endfor %>
 
-\vspace{-2mm}
+\vspace{-5mm}
 
 \section{\textbf{Skills}}
 \resumeHeadingSkillStart
@@ -219,9 +219,9 @@
 \resumeSubHeadingListStart
 <% for job in experience %>
   \resumeSubheading
-  {<<< job.role >>>}
+  {<<< job.company >>>}
   {<<< job.location >>>}
-  {<<< job.company >>> (<<< job.work_type >>>)}
+  {<<< job.role >>>}
   {<<< job.start_date >>> - <<< job.end_date >>> }
   \resumeItemListStart
   <% for bullet in job.bullets %>
@@ -232,12 +232,12 @@
 \resumeSubHeadingListEnd
 
 \vspace{-4mm}
-\section{\textbf{Projects}}
+\section{\textbf{<%- if section_aliases and section_aliases.projects -%><<< section_aliases.projects >>><%- else -%>Projects<%- endif -%>}}
 \resumeSubHeadingListStart
 <% for project in projects %>
 \resumeProject
   {<<< project.title >>>}
-  {Tools: <<< project.tools >>>}
+  {<%- if project.tools -%>Tools: <<< project.tools >>><%- endif -%>}
   {<<< project.date >>>}
   {\href{<<< project.link >>>}{<<< project.link >>>} }
 \resumeItemListStart
