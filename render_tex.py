@@ -10,7 +10,49 @@ def latex_escape(text: str) -> str:
     # Replace backslash first to avoid re-escaping backslashes introduced by
     # later replacements (e.g. replacing '&' with '\&' shouldn't then turn
     # the leading backslash into '\textbackslash{}'). Use an ordered list.
-    replacements = [
+    
+    # Use placeholders for Unicode math symbols to preserve them through escaping
+    import uuid
+    placeholders = {}
+    
+    unicode_math_replacements = [
+        ("≈", r"$\approx$"),
+        ("±", r"$\pm$"),
+        ("×", r"$\times$"),
+        ("÷", r"$\div$"),
+        ("≤", r"$\leq$"),
+        ("≥", r"$\geq$"),
+        ("≠", r"$\neq$"),
+        ("∞", r"$\infty$"),
+        ("∑", r"$\sum$"),
+        ("∏", r"$\prod$"),
+        ("√", r"$\sqrt{}$"),
+        ("°", r"$^\circ$"),
+    ]
+    
+    # Replace Unicode math with placeholders
+    for char, latex_code in unicode_math_replacements:
+        if char in text:
+            placeholder = f"UNICODEMATH{uuid.uuid4().hex}"
+            placeholders[placeholder] = latex_code
+            text = text.replace(char, placeholder)
+    
+    # Handle typographic characters (no math mode needed)
+    typography_replacements = [
+        ("–", r"--"),  # en-dash
+        ("—", r"---"), # em-dash
+        (""", r"``"),  # left double quote
+        (""", r"''"),  # right double quote
+        ("'", r"`"),   # left single quote
+        ("'", r"'"),   # right single quote
+        ("…", r"..."), # ellipsis
+    ]
+    
+    for char, replacement in typography_replacements:
+        text = text.replace(char, replacement)
+    
+    # Then handle standard LaTeX special characters
+    latex_special = [
         ("\\", r"\textbackslash{}"),
         ("&", r"\&"),
         ("%", r"\%"),
@@ -22,8 +64,13 @@ def latex_escape(text: str) -> str:
         ("~", r"\textasciitilde{}"),
         ("^", r"\textasciicircum{}"),
     ]
-    for char, replacement in replacements:
+    for char, replacement in latex_special:
         text = text.replace(char, replacement)
+    
+    # Restore math symbols from placeholders
+    for placeholder, latex_code in placeholders.items():
+        text = text.replace(placeholder, latex_code)
+    
     return text
 
 def escape_all(data):
