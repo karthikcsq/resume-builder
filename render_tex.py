@@ -41,10 +41,10 @@ def latex_escape(text: str) -> str:
     typography_replacements = [
         ("–", r"--"),  # en-dash
         ("—", r"---"), # em-dash
-        (""", r"``"),  # left double quote
-        (""", r"''"),  # right double quote
-        ("'", r"`"),   # left single quote
-        ("'", r"'"),   # right single quote
+        ("\u201c", r"``"),  # left double quote
+        ("\u201d", r"''"),  # right double quote
+        ("\u2018", r"`"),   # left single quote
+        ("\u2019", r"'"),   # right single quote
         ("…", r"..."), # ellipsis
     ]
     
