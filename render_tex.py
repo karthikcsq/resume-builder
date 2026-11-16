@@ -124,6 +124,9 @@ def filter_for_target(obj, target="cv"):
             filtered = filter_for_target(v, target)
             if filtered is not None:
                 result[k] = filtered
+        # a bullet written as {text, show_on} renders as its text
+        if set(result) == {"text"}:
+            return result["text"]
         return result
     elif isinstance(obj, list):
         out = []
